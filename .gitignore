@@ -1,6 +1,9 @@
 # Generated benchmark traces
 outputs/traces/*.jsonl
 
+# Real-agent benchmark run outputs (non-deterministic)
+outputs/agent_runs/
+
 # Compiled Go binary
 skills/go-binary/bin/skill-runner
 
