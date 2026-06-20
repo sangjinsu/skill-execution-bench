@@ -16,3 +16,7 @@ __pycache__/
 
 # Haiku discrimination experiment runs (non-deterministic)
 outputs/agent_runs_haiku/
+
+# Hard-case discrimination experiment runs (non-deterministic)
+outputs/agent_runs_hard_opus/
+outputs/agent_runs_hard_haiku/
