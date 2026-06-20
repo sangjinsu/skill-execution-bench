@@ -1,0 +1,12 @@
+# Generated benchmark traces
+outputs/traces/*.jsonl
+
+# Compiled Go binary
+skills/go-binary/bin/skill-runner
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
