@@ -13,3 +13,6 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .venv/
+
+# Haiku discrimination experiment runs (non-deterministic)
+outputs/agent_runs_haiku/

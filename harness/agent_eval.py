@@ -138,6 +138,37 @@ def print_report(results: list[AgentResult], case_ids: list[str]) -> None:
         print(line)
 
 
+def print_metrics(runs: list[dict]) -> None:
+    """Print per-mode cost/speed: avg duration, tokens, and tool calls.
+
+    Metrics are read from optional run fields (duration_ms, tokens, tool_uses)
+    and silently skipped for runs that lack them.
+    """
+    by_mode: dict[str, list[dict]] = defaultdict(list)
+    for run in runs:
+        by_mode[run.get("mode", "unknown")].append(run)
+
+    def avg(values: list[float]) -> float | None:
+        nums = [v for v in values if isinstance(v, (int, float))]
+        return sum(nums) / len(nums) if nums else None
+
+    def fmt(value: float | None, suffix: str = "") -> str:
+        return f"{value:,.0f}{suffix}" if value is not None else "n/a"
+
+    print("\nCost & speed per mode (averaged over trials)")
+    print("=" * 60)
+    print(f"{'mode':<16}{'avg sec':>12}{'avg tokens':>16}{'avg tools':>14}")
+    print("-" * 60)
+    for mode in sorted(by_mode, key=_mode_sort_key):
+        rows = by_mode[mode]
+        secs = avg([r.get("duration_ms") for r in rows])
+        secs = secs / 1000 if secs is not None else None
+        toks = avg([r.get("tokens") for r in rows])
+        tools = avg([r.get("tool_uses") for r in rows])
+        print(f"{mode:<16}{fmt(secs, 's'):>12}{fmt(toks):>16}{fmt(tools):>14}")
+    print("-" * 60)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Score real LLM-agent benchmark runs.")
     parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS_DIR)
@@ -153,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
     results = score_runs(runs, expected_by_case)
     write_traces(results, args.trace)
     print_report(results, case_ids)
+    print_metrics(runs)
     print(f"\nTraces written to {args.trace}")
     return 0
 

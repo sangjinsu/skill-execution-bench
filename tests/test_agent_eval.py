@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 
-from harness.agent_eval import load_runs, score_runs, write_traces
+from harness.agent_eval import load_runs, print_metrics, score_runs, write_traces
 
 EXPECTED = {
     "case-001": [{"id": "1", "title": "A", "status": "todo"}],
@@ -73,3 +73,16 @@ def test_write_traces_roundtrip(tmp_path):
     lines = [json.loads(l) for l in trace.read_text(encoding="utf-8").splitlines()]
     assert len(lines) == 2
     assert all("passed" in row for row in lines)
+
+
+def test_print_metrics_handles_present_and_missing_fields(capsys):
+    runs = [
+        {"mode": "doc-only", "trial": 1, "duration_ms": 11000, "tokens": 46000, "tool_uses": 1, "outputs": {}},
+        {"mode": "python-script", "trial": 1, "outputs": {}},  # no metric fields
+    ]
+    print_metrics(runs)
+    out = capsys.readouterr().out
+    assert "Cost & speed per mode" in out
+    assert "doc-only" in out
+    assert "11s" in out          # 11000 ms -> 11s
+    assert "n/a" in out          # python-script has no metrics
