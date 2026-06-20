@@ -1,9 +1,11 @@
 # Skill Execution Benchmark — Report
 
 **Date:** 2026-06-20
-**Subject model:** Claude Opus (`opus`)
+**Subject models:** Claude Opus, Claude Haiku
 **Task:** Normalize task records (see [`AGENTS.md`](./AGENTS.md))
-**Design:** 4 execution modes × 3 trials × 5 cases = **60 graded outputs**
+**Design:** 4 execution modes × 3 trials × 5 cases = **60 graded outputs per model** (120 total)
+
+> Korean version: [`REPORT.ko.md`](./REPORT.ko.md)
 
 ## 1. Question
 
@@ -42,61 +44,74 @@ Any missing or non-array output counts as a failure for that case.
 
 ## 3. Results
 
-### Reliability by mode
+### 3.1 Reliability (both models)
 
-| Mode | Reliability | Passed / Total |
-|------|------------:|---------------:|
-| doc-only | **100.0%** | 15 / 15 |
-| inline-code | **100.0%** | 15 / 15 |
-| python-script | **100.0%** | 15 / 15 |
-| go-binary | **100.0%** | 15 / 15 |
+| Mode | Opus | Haiku |
+|------|-----:|------:|
+| doc-only | **100%** (15/15) | **100%** (15/15) |
+| inline-code | **100%** (15/15) | **100%** (15/15) |
+| python-script | **100%** (15/15) | **100%** (15/15) |
+| go-binary | **100%** (15/15) | **100%** (15/15) |
 
-### Per-case pass count (passed trials / total trials)
+**No failures in any model, mode, case, or trial.** Even the weaker model (Haiku)
+did not break on doc-only, so the accuracy axis **hit the ceiling**. Each case
+targeted a distinct discriminator (status mapping, numeric id ordering, trim, key
+order, optional fields) — all handled correctly by both models.
 
-| Case | doc-only | inline-code | python-script | go-binary |
-|------|:--------:|:-----------:|:-------------:|:---------:|
-| case-001 | 3/3 | 3/3 | 3/3 | 3/3 |
-| case-002 | 3/3 | 3/3 | 3/3 | 3/3 |
-| case-003 | 3/3 | 3/3 | 3/3 | 3/3 |
-| case-004 | 3/3 | 3/3 | 3/3 | 3/3 |
-| case-005 | 3/3 | 3/3 | 3/3 | 3/3 |
+### 3.2 Speed (avg seconds per trial)
 
-**No failures in any mode, case, or trial.**
+| Mode | Opus | Haiku |
+|------|-----:|------:|
+| doc-only | **11s** | **18s** |
+| inline-code | 24s | 34s |
+| python-script | 35s | 48s |
+| go-binary | 25s | 30s |
 
-Each case targeted a distinct normalization rule, all handled correctly:
+### 3.3 Tokens (avg per trial)
 
-| Case | Discriminator tested |
-|------|----------------------|
-| case-001 | trim + status mapping + id ordering |
-| case-002 | status label variants (`WIP`, `to do`, `pending`) |
-| case-003 | whitespace trim + case preservation in title |
-| case-004 | numeric id ordering (10 sorts after 2, not before) |
-| case-005 | optional field preserved, key order `id,title,status,…` |
+| Mode | Opus | Haiku |
+|------|------:|------:|
+| doc-only | **46,191** | **32,232** |
+| inline-code | 47,849 | 34,014 |
+| python-script | 48,104 | 33,919 |
+| go-binary | 47,118 | 33,201 |
+
+### 3.4 Tool calls (avg per trial)
+
+| Mode | Opus | Haiku |
+|------|-----:|------:|
+| doc-only | **1** | **1** |
+| inline-code | 3 | 4 |
+| python-script | 8 | 10 |
+| go-binary | 3 | 7 |
 
 ## 4. Conclusion
 
-**At Opus capability, Skill packaging does not affect execution reliability.**
-The doc-only mode — reasoning entirely by hand with no code — matched the
-script- and binary-backed modes perfectly across all 60 outputs. Opus correctly
-handled every discriminator: numeric sorting, status mapping, trimming, key
-ordering, and optional-field preservation.
+**At this task difficulty, packaging does not separate the modes on accuracy** —
+both Opus and Haiku scored 120/120. The real differentiator is **efficiency**:
 
-In other words, for a task of this difficulty the result **hit the ceiling** for
-all four modes; the benchmark cannot distinguish them at this model tier.
+- **doc-only is the cheapest and fastest** when accuracy holds: pure reasoning,
+  one tool call, lowest time and tokens. Running code cost *more* than reasoning
+  for this simple, deterministic transform.
+- **python-script is the heaviest** — per-case stdin round-trips push it to 8–10
+  tool calls and the slowest wall time.
+- **go-binary amortizes a one-time build** and then runs fast, beating python-script.
+- This flips as an **insurance argument**: once a task gets hard enough that
+  doc-only's hand-computation starts to slip, the script/binary modes keep
+  accuracy by *just invoking the right tool*. The harder the task, the more the
+  external-execution packaging earns its overhead.
 
 ## 5. Limitations & next steps
 
-To surface the differences this project is designed to measure, raise difficulty
-until doc-only breaks first:
+Haiku also hitting the ceiling means **task difficulty is the bottleneck** for
+discrimination. To surface packaging differences in accuracy:
 
-- **Weaker model (e.g. Haiku):** likely degrades doc-only (manual reasoning)
-  before the script/binary modes, which only require correct invocation.
-- **Harder dataset:** nested structures, large record counts, ambiguous status
-  labels, adversarial whitespace/unicode.
-- **More trials:** tighter reliability estimates once variance appears.
+- **Harder dataset:** nested structures, large record counts, ambiguous/conflicting
+  status labels, adversarial whitespace/unicode — make doc-only break first.
+- **More trials:** tighter confidence intervals once variance appears.
 
-The scoring infrastructure (`harness/agent_eval.py`) and fairness protocol are
-reusable as-is for those follow-ups.
+The scoring/metrics infrastructure (`harness/agent_eval.py`) and fairness protocol
+are reusable as-is for those follow-ups.
 
 ## 6. Reproducing
 
