@@ -90,6 +90,22 @@ double space in `"Spaced  Out"`). Takeaway: the weaker the model or the trickier
 the task, the more a script/binary package earns its overhead as accuracy
 insurance; for strong models on simple tasks, doc-only wins on efficiency.
 
+**Hard operation (dependency topological sort, 6 cases × 3 trials × 2 models):**
+a deeper, algorithmic operation rather than just harder input.
+
+| Mode | Opus | Haiku |
+|------|:----:|:-----:|
+| doc-only | **83.3%** | **88.9%** |
+| inline-code / python-script / go-binary | 100% | 100% |
+
+Here even **Opus doc-only breaks** (and scores below Haiku) — it loses track of
+graph indegrees by hand on the larger graphs. The strongest discrimination axis
+turns out to be the **algorithmic depth of the operation**, not input difficulty:
+code-execution modes stay 100% across every model × experiment, so once an
+operation goes beyond simple mapping/sorting into a multi-step algorithm,
+script/binary packaging is a requirement, not a preference. See
+[`REPORT.md`](./REPORT.md) §"Follow-up 2".
+
 ## Requirements
 
 - Python 3.11+

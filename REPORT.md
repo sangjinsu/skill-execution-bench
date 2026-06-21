@@ -190,3 +190,68 @@ python-script the heaviest.
 - Practical guidance: **the weaker the model or the trickier the task, the more
   packaging the logic as a script/binary (external execution) earns its overhead as
   accuracy insurance.** For strong models on simple tasks, doc-only wins on efficiency.
+
+---
+
+# Follow-up 2: A harder operation — dependency topological sort
+
+Both experiments above varied only the *input* of one operation ("normalize"), and a
+strong model (Opus) held 100% on doc-only no matter how hard the input got. This
+experiment adds a new operation that is **algorithmically deep**: dependency
+**topological sort** (Kahn's algorithm, smallest-numeric-id tie-break, cycle
+detection) over `datasets/tasks-toposort.jsonl` (6 cases, 5–12 nodes). The dataset is
+designed so the topological order **differs from a plain id sort** (e.g.
+`["5","4","3","2","1"]`), so the "just output ids ascending" heuristic cannot pass.
+Expected outputs come from the reference implementation, guaranteeing the code modes
+can pass. Design: 4 modes × 3 trials × 6 cases × 2 models (Opus, Haiku).
+
+## Toposort accuracy (model × mode) — even the strong model breaks
+
+| Mode | Opus | Haiku |
+|------|-----:|------:|
+| doc-only | **83.3%** (15/18) | **88.9%** (16/18) |
+| inline-code | 100% (18/18) | 100% (18/18) |
+| python-script | 100% (18/18) | 100% (18/18) |
+| go-binary | 100% (18/18) | 100% (18/18) |
+
+**This time Opus doc-only broke too — and scored lower than Haiku.** All failures
+were on the larger graphs (topo-005: 12 nodes, topo-006: 9 nodes). Opus doc-only
+missed one large graph in every trial (losing track of indegrees by hand — skipping a
+ready node or dropping a node from the output). Both models always got the small
+graphs (topo-001–004) right.
+
+The three code-execution modes scored 100% for both models — running the algorithm as
+code is correct regardless of graph size.
+
+## Toposort speed & tokens (avg per trial)
+
+| Mode | Opus s | Haiku s | Opus tok | Haiku tok |
+|------|-------:|--------:|---------:|----------:|
+| doc-only | 22 | 26 | 46,586 | 32,536 |
+| inline-code | 25 | 35 | 48,835 | 34,979 |
+| python-script | 33 | 41 | 48,490 | 35,309 |
+| go-binary | 26 | 40 | 47,743 | 33,900 |
+
+## Grand summary — doc-only accuracy across all three experiments
+
+| Experiment (operation / difficulty) | Opus doc-only | Haiku doc-only | Code modes (both) |
+|-------------------------------------|:-------------:|:--------------:|:-----------------:|
+| Normalize · easy | 100% | 100% | 100% |
+| Normalize · hard input | 100% | 77.8% | 100% |
+| **Toposort (deep operation)** | **83.3%** | **88.9%** | **100%** |
+
+**Conclusion: the strongest discrimination axis is not input difficulty but the
+algorithmic depth of the operation.**
+
+- Making only the input hard breaks only the weak model (Haiku normalize-hard 77.8%,
+  while Opus stays 100%).
+- But when the **operation itself is deep** (toposort), even a strong model's doc-only
+  breaks (Opus 83.3%). Model strength did not rescue doc-only — Opus actually scored
+  below Haiku.
+- **Code-execution modes (inline/python/go) scored 100% in all six (model × experiment)
+  cells.** That is the core value: packaging the logic as code guarantees accuracy
+  regardless of model, input difficulty, or operation depth.
+- Updated guidance: **once an operation goes beyond simple mapping/sorting into a
+  multi-step algorithm (graphs, state machines, cumulative computation), doc-only is
+  not reliable even with a strong model. There, script/binary packaging is not a
+  preference but a requirement.**
