@@ -65,6 +65,31 @@ echo '[{"id":" 2 ","title":" Fix Login ","status":"In Progress"}]' \
 # -> [{"id":"2","title":"Fix Login","status":"doing"}]
 ```
 
+## Real-agent benchmark results (summary)
+
+Unlike `make bench` (a mechanical simulation that always passes), the real-agent
+benchmark dispatches sub-agents that see only each mode's `SKILL.md` and grades
+their output. See [`REPORT.md`](./REPORT.md) for the full tables and method.
+
+**Easy set (5 cases, 3 trials):** every mode scored **100%** for both Opus and
+Haiku — packaging did not separate the modes on accuracy (ceiling effect). The
+only difference was efficiency: doc-only is fastest/cheapest (1 tool call),
+python-script is heaviest.
+
+**Hard set (6 tedious-by-hand cases, 3 trials):** discrimination appears.
+
+| Mode | Opus | Haiku |
+|------|:----:|:-----:|
+| doc-only | 100% | **77.8%** |
+| inline-code / python-script / go-binary | 100% | 100% |
+
+Packaging discrimination is the interaction of **(model strength) × (task
+difficulty)**: the code-execution modes stay 100% everywhere, while doc-only
+breaks only in the **weak-model × hard-task** cell (e.g. collapsing the internal
+double space in `"Spaced  Out"`). Takeaway: the weaker the model or the trickier
+the task, the more a script/binary package earns its overhead as accuracy
+insurance; for strong models on simple tasks, doc-only wins on efficiency.
+
 ## Requirements
 
 - Python 3.11+
