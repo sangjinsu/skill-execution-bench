@@ -4,8 +4,9 @@ outputs/traces/*.jsonl
 # Real-agent benchmark run outputs (non-deterministic)
 outputs/agent_runs/
 
-# Compiled Go binary
+# Compiled Go binaries
 skills/go-binary/bin/skill-runner
+skills/toposort-go-binary/bin/toposort-runner
 
 # Python
 __pycache__/
@@ -20,3 +21,7 @@ outputs/agent_runs_haiku/
 # Hard-case discrimination experiment runs (non-deterministic)
 outputs/agent_runs_hard_opus/
 outputs/agent_runs_hard_haiku/
+
+# Topological-sort experiment runs (non-deterministic)
+outputs/agent_runs_topo_opus/
+outputs/agent_runs_topo_haiku/
