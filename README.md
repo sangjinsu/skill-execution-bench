@@ -71,40 +71,39 @@ Unlike `make bench` (a mechanical simulation that always passes), the real-agent
 benchmark dispatches sub-agents that see only each mode's `SKILL.md` and grades
 their output. See [`REPORT.md`](./REPORT.md) for the full tables and method.
 
-**Easy set (5 cases, 3 trials):** every mode scored **100%** for both Opus and
-Haiku — packaging did not separate the modes on accuracy (ceiling effect). The
-only difference was efficiency: doc-only is fastest/cheapest (1 tool call),
-python-script is heaviest.
+**10-trial run:** 2 operations × 2 models × 4 modes × **10 trials** × 6 cases =
+**160 dispatches / 960 graded cases**.
 
-**Hard set (6 tedious-by-hand cases, 3 trials):** discrimination appears.
+**The three code modes (inline·python·go) are 100% across all four cells and every
+trial — 960/960. Only doc-only ever breaks.**
 
-| Mode | Opus | Haiku |
-|------|:----:|:-----:|
-| doc-only | 100% | **77.8%** |
-| inline-code / python-script / go-binary | 100% | 100% |
+| Operation | Model | doc-only | inline / python / go |
+|-----------|-------|:--------:|:--------------------:|
+| normalize-hard | Haiku | **71.7%** | 100% |
+| normalize-hard | Opus | **100%** | 100% |
+| toposort | Haiku | **95.0%** | 100% |
+| toposort | Opus | **88.3%** | 100% |
 
-Packaging discrimination is the interaction of **(model strength) × (task
-difficulty)**: the code-execution modes stay 100% everywhere, while doc-only
-breaks only in the **weak-model × hard-task** cell (e.g. collapsing the internal
-double space in `"Spaced  Out"`). Takeaway: the weaker the model or the trickier
-the task, the more a script/binary package earns its overhead as accuracy
-insurance; for strong models on simple tasks, doc-only wins on efficiency.
+**Two orthogonal discrimination axes emerge:**
 
-**Hard operation (dependency topological sort, 6 cases × 3 trials × 2 models):**
-a deeper, algorithmic operation rather than just harder input.
+- The **input-difficulty** trap (normalize-hard) breaks *only the weak model* —
+  Haiku 71.7% vs Opus 100%. Failures concentrate on hard-006 (empty title +
+  duplicate id + internal double-space) **0/10** and hard-004 (optional-field
+  trimming) **3/10**.
+- The **operation-depth** trap (toposort) breaks *even the strong model* — Opus
+  doc-only **88.3%**, dropping to **50% (5/10)** on the 12-node graph (topo-005).
+  Model strength cannot save it.
 
-| Mode | Opus | Haiku |
-|------|:----:|:-----:|
-| doc-only | **83.3%** | **88.9%** |
-| inline-code / python-script / go-binary | 100% | 100% |
+So the strongest discrimination axis is the **algorithmic depth of the operation**,
+not input difficulty. Once an operation goes beyond simple mapping/sorting into a
+multi-step algorithm, script/binary packaging is a requirement, not a preference.
 
-Here even **Opus doc-only breaks** (and scores below Haiku) — it loses track of
-graph indegrees by hand on the larger graphs. The strongest discrimination axis
-turns out to be the **algorithmic depth of the operation**, not input difficulty:
-code-execution modes stay 100% across every model × experiment, so once an
-operation goes beyond simple mapping/sorting into a multi-step algorithm,
-script/binary packaging is a requirement, not a preference. See
-[`REPORT.md`](./REPORT.md) §"Follow-up 2".
+**Efficiency (10-trial averages):** doc-only always has the fewest tool calls (1),
+making it cheapest — but only when accuracy holds. **In a fair comparison (binary
+pre-built, build excluded), go-binary is the fastest code mode** — toposort Opus:
+go 27s (2 tool calls) vs python 39s (4); toposort Haiku: go 31s is fastest among
+code modes. python-script is heaviest (6–10 tool calls from per-case stdin
+round-trips). See [`REPORT.md`](./REPORT.md) for full tables.
 
 ## Requirements
 
