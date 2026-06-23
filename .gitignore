@@ -25,3 +25,12 @@ outputs/agent_runs_hard_haiku/
 # Topological-sort experiment runs (non-deterministic)
 outputs/agent_runs_topo_opus/
 outputs/agent_runs_topo_haiku/
+
+# 10-trial re-benchmark runs (non-deterministic)
+outputs/agent_runs_hard10_opus/
+outputs/agent_runs_hard10_haiku/
+outputs/agent_runs_topo10_opus/
+outputs/agent_runs_topo10_haiku/
+
+# OMC orchestrator state (not part of the benchmark)
+.omc/

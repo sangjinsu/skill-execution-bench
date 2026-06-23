@@ -34,7 +34,9 @@ behaves identically across machines.
 
 ## Procedure
 
-1. Build the binary (standard library only, no modules to download):
+1. **If the binary already exists at `skills/go-binary/bin/skill-runner`, skip the
+   build and run it directly.** Build only when it is missing (standard library only,
+   no modules to download):
 
    ```bash
    go build -o skills/go-binary/bin/skill-runner ./skills/go-binary/cmd/skill-runner

@@ -26,7 +26,8 @@ algorithm by hand.
 
 ## Procedure
 
-1. Build the binary (standard library only):
+1. **If the binary already exists at `skills/toposort-go-binary/bin/toposort-runner`,
+   skip the build and run it directly.** Build only when it is missing:
 
    ```bash
    go build -o skills/toposort-go-binary/bin/toposort-runner ./skills/toposort-go-binary/cmd/toposort-runner
@@ -46,7 +47,7 @@ algorithm by hand.
    # -> ["1","2","3"]
    ```
 
-Build first, then invoke the binary. Do not reimplement the logic by hand.
+Invoke the (already-built) binary. Do not reimplement the logic by hand.
 
 ## Validation
 
