@@ -1,10 +1,27 @@
 # Skill Execution Benchmark — Consolidated Report (10-trial)
 
+**English** · [한국어](./REPORT.ko.md) · [← README](./README.md)
+
 **Date:** 2026-06-24
 **Models:** Claude Opus, Claude Haiku
 **Operations:** ① task-record normalization, ② dependency topological sort (defined in [`AGENTS.md`](./AGENTS.md))
 **Scale:** 2 operations × 2 models × 4 modes × **10 trials** × 6 cases = **160 dispatches / 960 graded cases**
-**Korean:** [`REPORT.ko.md`](./REPORT.ko.md)
+
+> **TL;DR** — The three code modes are 100% across all 960 cases; only `doc-only` breaks.
+> Input difficulty breaks only Haiku (normalize-hard 71.7%); operation depth breaks even Opus
+> (toposort 88.3%, 50% on the 12-node graph). With the binary pre-built, go-binary is the
+> fastest code mode.
+
+## Contents
+
+1. [Question](#1-question)
+2. [Method](#2-method) — incl. [go-binary fairness fix](#21-go-binary-fairness-fix-key-correction-vs-prior-report)
+3. [Two orthogonal difficulty axes](#3-two-orthogonal-difficulty-axes)
+4. [Accuracy results (headline)](#4-accuracy-results-headline)
+5. [Efficiency results](#5-efficiency-results-per-trial-averages-10-trial)
+6. [Conclusions](#6-conclusions)
+7. [Limitations & next steps](#7-limitations--next-steps)
+8. [Reproduction](#8-reproduction)
 
 ---
 
@@ -29,7 +46,7 @@ For each (operation, model, mode, trial) we dispatched a sub-agent under a **fai
   embedded code, python-script runs the script, **go-binary executes the pre-built binary only** (§2.1).
 
 Grading is deterministic against ground truth produced by reference implementations via
-`harness/agent_eval.py` (object key order ignored, array order significant). Speed, tokens, and tool-call
+[`harness/agent_eval.py`](./harness/agent_eval.py) (object key order ignored, array order significant). Speed, tokens, and tool-call
 counts are aggregated from each run's metrics.
 
 ### 2.1 go-binary fairness fix (key correction vs. prior report)
@@ -48,8 +65,8 @@ speed differences reflect **the tool-call pattern under pure execution (stdin ro
 
 | Operation | Difficulty axis | Dataset | Traps |
 |-----------|-----------------|---------|-------|
-| normalize-hard | **input difficulty** ↑ | 6 cases | numeric-sort trap, unmapped labels, internal double-spaces, empty title + duplicate id, optional-field trimming |
-| toposort | **operation depth** ↑ | 6 cases | Kahn's algorithm, 5–12 nodes, topo order ≠ id sort |
+| normalize-hard | **input difficulty** ↑ | [6 cases](./datasets/tasks-hard.jsonl) | numeric-sort trap, unmapped labels, internal double-spaces, empty title + duplicate id, optional-field trimming |
+| toposort | **operation depth** ↑ | [6 cases](./datasets/tasks-toposort.jsonl) | Kahn's algorithm, 5–12 nodes, topo order ≠ id sort |
 
 Normalization makes "only the input hard"; toposort makes "the computation itself deep" — two
 orthogonal axes.

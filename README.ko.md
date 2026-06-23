@@ -1,5 +1,7 @@
 # skill-execution-bench (한국어)
 
+[English](./README.md) · **한국어**
+
 LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형태로 포장하느냐**에 따라
 신뢰성과 효율이 어떻게 달라지는지 비교하는 로컬 우선(local-first) 벤치마크입니다.
 
@@ -7,10 +9,10 @@ LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형
 
 | 모드 | 로직 위치 | 실행 방식 |
 |------|-----------|-----------|
-| `doc-only` | 자연어 지침만 | 에이전트가 손으로 추론·수행 |
-| `inline-code` | `SKILL.md` 안의 코드 블록 | 내장 코드를 복사·실행 |
-| `python-script` | 별도 `transform.py` | 스크립트 실행(stdin/stdout) |
-| `go-binary` | 컴파일된 Go 바이너리 | 바이너리 실행(stdin/stdout) |
+| [`doc-only`](./skills/doc-only/SKILL.md) | 자연어 지침만 | 에이전트가 손으로 추론·수행 |
+| [`inline-code`](./skills/inline-code/SKILL.md) | `SKILL.md` 안의 코드 블록 | 내장 코드를 복사·실행 |
+| [`python-script`](./skills/python-script/SKILL.md) | 별도 [`transform.py`](./skills/python-script/scripts/transform.py) | 스크립트 실행(stdin/stdout) |
+| [`go-binary`](./skills/go-binary/SKILL.md) | 컴파일된 Go 바이너리 | 바이너리 실행(stdin/stdout) |
 
 이 프로젝트가 답하려는 질문:
 
@@ -19,6 +21,14 @@ LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형
 
 전체 명세는 [`AGENTS.md`](./AGENTS.md), 실험 결과는 [`REPORT.ko.md`](./REPORT.ko.md)
 (영문 [`REPORT.md`](./REPORT.md))를 참고하세요.
+
+## 결과 한눈에
+
+실제 서브에이전트, 각 10 trial. **코드 3모드(inline/python/go)는 어디서나 100%, 무너지는
+건 `doc-only`뿐입니다** — 그 *무너지는 방식*이 두 축을 드러냅니다: 입력 난이도는 약한 모델만
+(Haiku 정규화-하드 **71.7%**), 동작 깊이는 강한 모델조차(Opus 위상정렬 **88.3%**) 가라앉힙니다.
+
+[전체 결과로 ↓](#주요-결과-요약-10-trial) · [`REPORT.ko.md`](./REPORT.ko.md) · [English report](./REPORT.md)
 
 ## 작업: 작업 레코드 정규화
 

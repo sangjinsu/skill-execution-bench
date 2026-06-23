@@ -1,22 +1,33 @@
 # skill-execution-bench
 
+**English** · [한국어](./README.ko.md)
+
 A small, local-first benchmark that compares **four Skill execution patterns** for an LLM
 coding agent. The benchmark holds the *task* constant (normalize a list of task records) and
 varies only how the Skill packages its executable logic:
 
 | Mode | Where the logic lives | How it runs |
 |------|-----------------------|-------------|
-| `doc-only` | Natural-language instructions only | Agent reasons and performs by hand |
-| `inline-code` | A code block inside `SKILL.md` | Agent copies/executes the embedded code |
-| `python-script` | A separate `transform.py` | Agent invokes the script (stdin/stdout) |
-| `go-binary` | A compiled Go binary | Agent invokes the binary (stdin/stdout) |
+| [`doc-only`](./skills/doc-only/SKILL.md) | Natural-language instructions only | Agent reasons and performs by hand |
+| [`inline-code`](./skills/inline-code/SKILL.md) | A code block inside `SKILL.md` | Agent copies/executes the embedded code |
+| [`python-script`](./skills/python-script/SKILL.md) | A separate [`transform.py`](./skills/python-script/scripts/transform.py) | Agent invokes the script (stdin/stdout) |
+| [`go-binary`](./skills/go-binary/SKILL.md) | A compiled Go binary | Agent invokes the binary (stdin/stdout) |
 
 The question this project answers:
 
 > When an LLM agent uses a Skill, is it more reliable to provide only written instructions,
 > inline executable code, a separate Python script, or a separate compiled Go binary?
 
-See [`AGENTS.md`](./AGENTS.md) for the full specification.
+See [`AGENTS.md`](./AGENTS.md) for the full specification and [`REPORT.md`](./REPORT.md) for results.
+
+## Results at a glance
+
+Real sub-agents, 10 trials each. **The three code modes (inline/python/go) score 100%
+everywhere; only `doc-only` breaks** — and *how* it breaks reveals two axes: input
+difficulty sinks the weak model (Haiku normalize-hard **71.7%**), operation depth sinks
+even the strong one (Opus toposort **88.3%**).
+
+[Jump to full results ↓](#real-agent-benchmark-results-summary) · [`REPORT.md`](./REPORT.md) · [한국어 리포트](./REPORT.ko.md)
 
 ## The task: normalize task records
 
