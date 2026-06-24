@@ -117,7 +117,7 @@ python -m harness.agent_eval --runs-dir outputs/agent_runs_haiku \    # Haiku
 
 **효율 (10-trial 평균):** `doc-only`가 항상 도구 호출 최소(1회)로 가장 경제적 — 단, 정확성이
 보장될 때만. **공정 비교(바이너리 사전 빌드, 빌드 측정 제외)에서 go-binary가 코드 모드 중 가장
-빠릅니다** — 위상 Opus에서 go 27s(도구 2회) vs python 39s(도구 4회), 위상 Haiku에서 go 31s로 최速.
+빠릅니다** — 위상 Opus에서 go 27s(도구 2회) vs python 39s(도구 4회), 위상 Haiku에서 go 31s로 최고속.
 `python-script`는 케이스마다 stdin 왕복으로 도구 6~10회로 가장 무겁습니다.
 
 자세한 표·해석은 [`REPORT.ko.md`](./REPORT.ko.md)에 있습니다.
