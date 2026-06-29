@@ -1,6 +1,6 @@
 # skill-execution-bench
 
-**English** · [한국어](./README.ko.md)
+**English** | [한국어](./README.ko.md)
 
 A small, local-first benchmark that compares **four Skill execution patterns** for an LLM
 coding agent. The benchmark holds the *task* constant (normalize a list of task records) and
@@ -23,11 +23,11 @@ See [`AGENTS.md`](./AGENTS.md) for the full specification and [`REPORT.md`](./RE
 ## Results at a glance
 
 Real sub-agents, 10 trials each. **The three code modes (inline/python/go) score 100%
-everywhere; only `doc-only` breaks** — and *how* it breaks reveals two axes: input
-difficulty sinks the weak model (Haiku normalize-hard **71.7%**), operation depth sinks
-even the strong one (Opus toposort **88.3%**).
+everywhere; only `doc-only` breaks.** How it breaks reveals two axes: input difficulty
+sinks the weak model (Haiku normalize-hard **71.7%**), and operation depth sinks even the
+strong one (Opus toposort **88.3%**).
 
-[Jump to full results ↓](#real-agent-benchmark-results-summary) · [`REPORT.md`](./REPORT.md) · [한국어 리포트](./REPORT.ko.md)
+[Jump to full results ↓](#real-agent-benchmark-results-summary) | [`REPORT.md`](./REPORT.md) | [한국어 리포트](./REPORT.ko.md)
 
 ## The task: normalize task records
 
@@ -85,8 +85,8 @@ their output. See [`REPORT.md`](./REPORT.md) for the full tables and method.
 **10-trial run:** 2 operations × 2 models × 4 modes × **10 trials** × 6 cases =
 **160 dispatches / 960 graded cases**.
 
-**The three code modes (inline·python·go) are 100% across all four cells and every
-trial — 960/960. Only doc-only ever breaks.**
+**The three code modes (inline/python/go) are 100% across all four cells and every
+trial: 960/960. Only doc-only ever breaks.**
 
 | Operation | Model | doc-only | inline / python / go |
 |-----------|-------|:--------:|:--------------------:|
@@ -97,11 +97,11 @@ trial — 960/960. Only doc-only ever breaks.**
 
 **Two orthogonal discrimination axes emerge:**
 
-- The **input-difficulty** trap (normalize-hard) breaks *only the weak model* —
+- The **input-difficulty** trap (normalize-hard) breaks *only the weak model*:
   Haiku 71.7% vs Opus 100%. Failures concentrate on hard-006 (empty title +
   duplicate id + internal double-space) **0/10** and hard-004 (optional-field
   trimming) **3/10**.
-- The **operation-depth** trap (toposort) breaks *even the strong model* — Opus
+- The **operation-depth** trap (toposort) breaks *even the strong model*: Opus
   doc-only **88.3%**, dropping to **50% (5/10)** on the 12-node graph (topo-005).
   Model strength cannot save it.
 
@@ -110,10 +110,10 @@ not input difficulty. Once an operation goes beyond simple mapping/sorting into 
 multi-step algorithm, script/binary packaging is a requirement, not a preference.
 
 **Efficiency (10-trial averages):** doc-only always has the fewest tool calls (1),
-making it cheapest — but only when accuracy holds. **In a fair comparison (binary
-pre-built, build excluded), go-binary is the fastest code mode** — toposort Opus:
+making it cheapest, but only when accuracy holds. **In a fair comparison (binary
+pre-built, build excluded), go-binary is the fastest code mode.** Toposort Opus:
 go 27s (2 tool calls) vs python 39s (4); toposort Haiku: go 31s is fastest among
-code modes. python-script is heaviest (6–10 tool calls from per-case stdin
+code modes. python-script is heaviest (6 to 10 tool calls from per-case stdin
 round-trips). See [`REPORT.md`](./REPORT.md) for full tables.
 
 ## Requirements

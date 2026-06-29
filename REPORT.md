@@ -1,13 +1,13 @@
-# Skill Execution Benchmark — Consolidated Report (10-trial)
+# Skill Execution Benchmark: Consolidated Report (10-trial)
 
-**English** · [한국어](./REPORT.ko.md) · [← README](./README.md)
+**English** | [한국어](./REPORT.ko.md) | [← README](./README.md)
 
 **Date:** 2026-06-24
 **Models:** Claude Opus, Claude Haiku
 **Operations:** ① task-record normalization, ② dependency topological sort (defined in [`AGENTS.md`](./AGENTS.md))
 **Scale:** 2 operations × 2 models × 4 modes × **10 trials** × 6 cases = **160 dispatches / 960 graded cases**
 
-> **TL;DR** — The three code modes are 100% across all 960 cases; only `doc-only` breaks.
+> **TL;DR:** The three code modes are 100% across all 960 cases; only `doc-only` breaks.
 > Input difficulty breaks only Haiku (normalize-hard 71.7%); operation depth breaks even Opus
 > (toposort 88.3%, 50% on the 12-node graph). With the binary pre-built, go-binary is the
 > fastest code mode.
@@ -15,7 +15,7 @@
 ## Contents
 
 1. [Question](#1-question)
-2. [Method](#2-method) — incl. [go-binary fairness fix](#21-go-binary-fairness-fix-key-correction-vs-prior-report)
+2. [Method](#2-method), incl. [go-binary fairness fix](#21-go-binary-fairness-fix-key-correction-vs-prior-report)
 3. [Two orthogonal difficulty axes](#3-two-orthogonal-difficulty-axes)
 4. [Accuracy results (headline)](#4-accuracy-results-headline)
 5. [Efficiency results](#5-efficiency-results-per-trial-averages-10-trial)
@@ -27,8 +27,8 @@
 
 ## 1. Question
 
-> When an LLM agent uses a Skill, how does the **packaging of the execution logic** —
-> doc-only / inline-code / python-script / go-binary — affect reliability and efficiency?
+> When an LLM agent uses a Skill, how does the **packaging of the execution logic**
+> (doc-only, inline-code, python-script, go-binary) affect reliability and efficiency?
 
 The four modes wrap the *same* logic differently. Holding the operation and ground truth fixed and
 varying only the packaging, we measure how accurately (reliability) and how cheaply (speed, tokens,
@@ -66,14 +66,14 @@ speed differences reflect **the tool-call pattern under pure execution (stdin ro
 | Operation | Difficulty axis | Dataset | Traps |
 |-----------|-----------------|---------|-------|
 | normalize-hard | **input difficulty** ↑ | [6 cases](./datasets/tasks-hard.jsonl) | numeric-sort trap, unmapped labels, internal double-spaces, empty title + duplicate id, optional-field trimming |
-| toposort | **operation depth** ↑ | [6 cases](./datasets/tasks-toposort.jsonl) | Kahn's algorithm, 5–12 nodes, topo order ≠ id sort |
+| toposort | **operation depth** ↑ | [6 cases](./datasets/tasks-toposort.jsonl) | Kahn's algorithm, 5-12 nodes, topo order ≠ id sort |
 
-Normalization makes "only the input hard"; toposort makes "the computation itself deep" — two
+Normalization makes "only the input hard"; toposort makes "the computation itself deep": two
 orthogonal axes.
 
 ## 4. Accuracy results (headline)
 
-### 4.1 Reliability — 4 cells × 4 modes (n = 60 cases/cell, 10 trials × 6 cases)
+### 4.1 Reliability: 4 cells × 4 modes (n = 60 cases/cell, 10 trials × 6 cases)
 
 | Operation | Model | doc-only | inline-code | python-script | go-binary |
 |-----------|-------|:--------:|:-----------:|:-------------:|:---------:|
@@ -82,19 +82,19 @@ orthogonal axes.
 | toposort | Haiku | **95.0%** | 100% | 100% | 100% |
 | toposort | Opus | **88.3%** | 100% | 100% | 100% |
 
-**The three code modes (inline·python·go) are 100% across all four cells and every trial — 960/960 cases.**
+**The three code modes (inline/python/go) are 100% across all four cells and every trial: 960/960 cases.**
 Only doc-only ever breaks.
 
 ### 4.2 doc-only failures concentrate per-case
 
 | Cell | Failing case (passed/total) | Failure character |
 |------|------------------------------|-------------------|
-| normalize-hard · Haiku | hard-006 **0/10**, hard-004 **3/10** | dropped empty-title duplicate record, `doing`↔`wip` mismapping, internal double-space collapsed, optional fields not trimmed, numeric vs lexicographic id sort wobble |
-| toposort · Opus | topo-005 **5/10**, topo-006 **8/10** | on 12/9-node graphs, missed ready nodes / transcription errors while tracking indegree by hand |
-| toposort · Haiku | topo-003/005/006 each **9/10** | sporadic single failure on large graphs |
-| normalize-hard · Opus | — (0 failures) | normalization is not a trap at Opus's level |
+| normalize-hard / Haiku | hard-006 **0/10**, hard-004 **3/10** | dropped empty-title duplicate record, `doing`↔`wip` mismapping, internal double-space collapsed, optional fields not trimmed, numeric vs lexicographic id sort wobble |
+| toposort / Opus | topo-005 **5/10**, topo-006 **8/10** | on 12/9-node graphs, missed ready nodes / transcription errors while tracking indegree by hand |
+| toposort / Haiku | topo-003/005/006 each **9/10** | sporadic single failure on large graphs |
+| normalize-hard / Opus | none (0 failures) | normalization is not a trap at Opus's level |
 
-Easy cases (normalize hard-001/002/003/005; topo-001/002/004) pass 10/10 in every cell — no discriminating
+Easy cases (normalize hard-001/002/003/005; topo-001/002/004) pass 10/10 in every cell, with no discriminating
 power. Discrimination occurs only on **specific trap cases**.
 
 ## 5. Efficiency results (per-trial averages, 10-trial)
@@ -118,13 +118,13 @@ power. Discrimination occurs only on **specific trap cases**.
 | hard | Opus | python-script | 57s | 50.7k | 6 |
 | hard | Opus | go-binary | 43s | 49.7k | 4 |
 
-- **doc-only always has the fewest tool calls (1)** — reasoning only, no external execution. Cheapest when
+- **doc-only always has the fewest tool calls (1):** reasoning only, no external execution. Cheapest when
   accuracy holds.
 - **Under fair conditions go-binary beats python-script.** topo Opus: go **27s/2 tools** vs python 39s/4 tools.
   topo Haiku: go **31s** is fastest among code modes. Excluding build reveals the low round-trip of a single
   execution binary.
-- **python-script is the heaviest code mode** — 6–10 tool calls from per-case stdin round-trips.
-- Tokens are driven **more by model (Opus ~47–50k vs Haiku ~33–35k) than by mode.**
+- **python-script is the heaviest code mode:** 6-10 tool calls from per-case stdin round-trips.
+- Tokens are driven **more by model (Opus ~47-50k vs Haiku ~33-35k) than by mode.**
 
 ## 6. Conclusions
 
@@ -132,14 +132,14 @@ power. Discrimination occurs only on **specific trap cases**.
 axis is the stronger.**
 
 1. **Hardening only the input breaks only the weak model.** normalize-hard: Haiku doc-only **71.7%**,
-   Opus **100%** — model strength rescues doc-only.
+   Opus **100%**. Model strength rescues doc-only.
 2. **Making the computation deep breaks even the strong model's doc-only.** toposort: Opus doc-only
    **88.3%**, dropping to **50%** on the 12-node graph (topo-005). Model strength cannot save it.
-3. **Code modes (inline/python/go) are 100% across all four cells** — guaranteeing accuracy regardless
+3. **Code modes (inline/python/go) are 100% across all four cells**, guaranteeing accuracy regardless
    of model, input difficulty, or operation depth. This is the core value of code packaging.
 4. **When accuracy is guaranteed, doc-only is most economical** (1 tool call). For simple/shallow
    operations, code packaging is pure overhead.
-5. **In a fair comparison (build excluded), go-binary is the fastest code mode** — single execution,
+5. **In a fair comparison (build excluded), go-binary is the fastest code mode:** single execution,
    low tool round-trips.
 
 ### Practical guidance
@@ -149,7 +149,7 @@ axis is the stronger.**
 | Strong model + simple/shallow operation | **doc-only** (fastest, cheapest, accurate enough) |
 | Weak model + tricky input | **script/binary** (accuracy insurance) |
 | Any model + deep algorithmic operation (graphs, state machines, accumulation) | **script/binary (required)** |
-| Code packaging needed and speed matters | **go-binary** (pre-built) — fastest under fair conditions |
+| Code packaging needed and speed matters | **go-binary** (pre-built), fastest under fair conditions |
 
 Bottom line: **once an operation goes beyond simple mapping/sorting into multi-step algorithms,
 doc-only is unreliable even with a strong model, and external-execution packaging is not optional but
@@ -157,14 +157,14 @@ required.**
 
 ## 7. Limitations & next steps
 
-- **Extended to 10 trials** — vs. 3-trial, the confidence intervals on the discriminating cells (Opus
+- **Extended to 10 trials:** vs. 3-trial, the confidence intervals on the discriminating cells (Opus
   toposort 88.3%, Haiku hard 71.7%) tightened, and per-trap failure rates (topo-005 50%, hard-006 0%)
   sharpened.
-- **Only 2 operations · 2 models** — deeper operations (shortest path, constraint satisfaction, parsing)
+- **Only 2 operations and 2 models.** Deeper operations (shortest path, constraint satisfaction, parsing)
   or a mid-size model would draw the discrimination curve more finely.
 - One go-binary cell (hard Haiku t10) hit a 3× infrastructure stall (stream watchdog); given code-mode
-  determinism (t1–9 all identical-correct) it was recorded with the verified output and speed metadata
-  approximated as the t1–9 mean.
+  determinism (t1-9 all identical-correct) it was recorded with the verified output and speed metadata
+  approximated as the t1-9 mean.
 - The grading/metrics infrastructure, fairness protocol, and dataset-generation method are reusable for
   follow-up experiments as-is.
 

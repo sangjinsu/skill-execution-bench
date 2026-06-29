@@ -1,6 +1,6 @@
 # skill-execution-bench (한국어)
 
-[English](./README.md) · **한국어**
+[English](./README.md) | **한국어**
 
 LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형태로 포장하느냐**에 따라
 신뢰성과 효율이 어떻게 달라지는지 비교하는 로컬 우선(local-first) 벤치마크입니다.
@@ -9,8 +9,8 @@ LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형
 
 | 모드 | 로직 위치 | 실행 방식 |
 |------|-----------|-----------|
-| [`doc-only`](./skills/doc-only/SKILL.md) | 자연어 지침만 | 에이전트가 손으로 추론·수행 |
-| [`inline-code`](./skills/inline-code/SKILL.md) | `SKILL.md` 안의 코드 블록 | 내장 코드를 복사·실행 |
+| [`doc-only`](./skills/doc-only/SKILL.md) | 자연어 지침만 | 에이전트가 손으로 추론하고 수행 |
+| [`inline-code`](./skills/inline-code/SKILL.md) | `SKILL.md` 안의 코드 블록 | 내장 코드를 복사해 실행 |
 | [`python-script`](./skills/python-script/SKILL.md) | 별도 [`transform.py`](./skills/python-script/scripts/transform.py) | 스크립트 실행(stdin/stdout) |
 | [`go-binary`](./skills/go-binary/SKILL.md) | 컴파일된 Go 바이너리 | 바이너리 실행(stdin/stdout) |
 
@@ -25,23 +25,23 @@ LLM 코딩 에이전트가 Skill을 사용할 때, **실행 로직을 어떤 형
 ## 결과 한눈에
 
 실제 서브에이전트, 각 10 trial. **코드 3모드(inline/python/go)는 어디서나 100%, 무너지는
-건 `doc-only`뿐입니다** — 그 *무너지는 방식*이 두 축을 드러냅니다: 입력 난이도는 약한 모델만
+건 `doc-only`뿐입니다.** 그 *무너지는 방식*이 두 축을 드러냅니다. 입력 난이도는 약한 모델만
 (Haiku 정규화-하드 **71.7%**), 동작 깊이는 강한 모델조차(Opus 위상정렬 **88.3%**) 가라앉힙니다.
 
-[전체 결과로 ↓](#주요-결과-요약-10-trial) · [`REPORT.ko.md`](./REPORT.ko.md) · [English report](./REPORT.md)
+[전체 결과로 ↓](#주요-결과-요약-10-trial) | [`REPORT.ko.md`](./REPORT.ko.md) | [English report](./REPORT.md)
 
 ## 작업: 작업 레코드 정규화
 
-각 러너는 JSON 배열(케이싱·공백·status 라벨이 제각각인 레코드)을 받아 정규화합니다.
+각 러너는 JSON 배열(케이싱, 공백, status 라벨이 제각각인 레코드)을 받아 정규화합니다.
 계약(contract):
 
 1. 모든 문자열 값 trim.
 2. `id` → trim된 문자열.
-3. `status` → trim·소문자화 후 매핑:
+3. `status` → trim하고 소문자화한 뒤 매핑:
    - `todo, to do, pending` → `todo`
    - `doing, in progress, wip` → `doing`
    - `done, complete, completed` → `done`
-   - 매핑에 없으면 소문자·trim 형태 유지.
+   - 매핑에 없으면 소문자화하고 trim한 형태로 유지.
 4. 그 외 필드 → trim.
 5. 없는 선택 필드는 추가하지 않음.
 6. 객체 키 순서: `id`, `title`, `status`, 그다음 나머지 키 알파벳순.
@@ -89,13 +89,13 @@ python -m harness.agent_eval --runs-dir outputs/agent_runs_haiku \    # Haiku
   --trace outputs/traces/agent-bench-haiku.jsonl
 ```
 
-채점기는 모드별 **정확성(신뢰성)** 과 함께 **속도·토큰·도구 호출 수**를 출력합니다.
+채점기는 모드별 **정확성(신뢰성)** 과 함께 **속도, 토큰, 도구 호출 수**를 출력합니다.
 
 ## 주요 결과 (요약, 10-trial)
 
 2개 동작 × 2모델 × 4모드 × **10 trial** × 6케이스 = **160 디스패치 / 960 케이스** 채점 결과.
 
-**코드 3모드(inline·python·go)는 4개 셀 전부, 모든 trial에서 100% — 960/960. 무너지는 것은
+**코드 3모드(inline/python/go)는 4개 셀 전부, 모든 trial에서 100%, 960/960입니다. 무너지는 것은
 언제나 doc-only뿐입니다.**
 
 | 동작 | 모델 | doc-only | inline / python / go |
@@ -107,20 +107,20 @@ python -m harness.agent_eval --runs-dir outputs/agent_runs_haiku \    # Haiku
 
 **두 직교 변별 축이 드러납니다:**
 
-- **입력 난이도** 함정(정규화-하드)은 *약한 모델만* 무너뜨립니다 — Haiku 71.7% vs Opus 100%.
-  실패는 hard-006(빈 title·중복 id·내부 이중공백) **0/10**, hard-004(optional trim) **3/10**에 집중.
-- **동작 깊이** 함정(위상정렬)은 *강한 모델조차* 무너뜨립니다 — Opus doc-only **88.3%**, 12노드
+- **입력 난이도** 함정(정규화-하드)은 *약한 모델만* 무너뜨립니다. Haiku 71.7% vs Opus 100%.
+  실패는 hard-006(빈 title, 중복 id, 내부 이중공백) **0/10**, hard-004(optional trim) **3/10**에 집중.
+- **동작 깊이** 함정(위상정렬)은 *강한 모델조차* 무너뜨립니다. Opus doc-only **88.3%**, 12노드
   그래프(topo-005)에서 **50%(5/10)**까지 추락. 모델 강도로도 못 구합니다.
 
 즉 변별의 가장 강력한 축은 입력 난이도가 아니라 **동작의 알고리즘적 깊이**입니다. 동작이 단순
-매핑/정렬을 넘어 다단계 알고리즘에 이르면 스크립트·바이너리 포장은 선택이 아니라 필수입니다.
+매핑이나 정렬을 넘어 다단계 알고리즘에 이르면 스크립트와 바이너리 포장은 선택이 아니라 필수입니다.
 
-**효율 (10-trial 평균):** `doc-only`가 항상 도구 호출 최소(1회)로 가장 경제적 — 단, 정확성이
-보장될 때만. **공정 비교(바이너리 사전 빌드, 빌드 측정 제외)에서 go-binary가 코드 모드 중 가장
-빠릅니다** — 위상 Opus에서 go 27s(도구 2회) vs python 39s(도구 4회), 위상 Haiku에서 go 31s로 최고속.
+**효율 (10-trial 평균):** `doc-only`가 항상 도구 호출 최소(1회)로 가장 경제적입니다. 단, 정확성이
+보장될 때만 그렇습니다. **공정 비교(바이너리 사전 빌드, 빌드 측정 제외)에서 go-binary가 코드 모드 중 가장
+빠릅니다.** 위상 Opus에서 go 27s(도구 2회) vs python 39s(도구 4회), 위상 Haiku에서 go 31s로 최고속.
 `python-script`는 케이스마다 stdin 왕복으로 도구 6~10회로 가장 무겁습니다.
 
-자세한 표·해석은 [`REPORT.ko.md`](./REPORT.ko.md)에 있습니다.
+자세한 표와 해석은 [`REPORT.ko.md`](./REPORT.ko.md)에 있습니다.
 
 ## 요구 사항
 
@@ -128,4 +128,4 @@ python -m harness.agent_eval --runs-dir outputs/agent_runs_haiku \    # Haiku
 - Go 1.22+ (go-binary 모드용)
 - GNU Make
 
-Docker·데이터베이스·네트워크 접근 없음.
+Docker, 데이터베이스, 네트워크 접근 없음.
